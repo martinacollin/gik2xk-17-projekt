@@ -9,9 +9,9 @@ const {
 
 async function getAll() {
     try {
-        const allProducts = await db.product.findAll({ include: [db.rating] });
+        const allProducts = await db.product.findAll();
         /* Om allt blev bra, returnera allProducts */
-        return createResponseSuccess(allProducts.map((product) => _formatProduct(product.dataValues)));
+        return createResponseSuccess(allProducts.map((product) => _formatProduct(product)));
     } catch (error) {
         return createResponseError(error.status, error.message);
     }
@@ -56,6 +56,40 @@ async function update(product, id) {
         return createResponseError(error.status, error.message);
     }
 }
+
+async function addRating(productId, rating) {
+    if (!productId) {
+        return createResponseError(422, 'Id är obligatoriskt');
+    }
+    try {
+        rating.productId = productId;
+        await db.rating.create(rating);
+
+        const productWithNewRating = await db.product.findOne({
+            where: { id: productId },
+            include: [db.rating]
+        });
+
+        return createResponseSuccess(_formatProduct(productWithNewRating));
+    } catch (error) {
+        return createResponseError(error.status, error.message);
+    }
+}
+
+async function addToCart(productId, cartId, amount) {
+    if (!productId || !cartId) {
+        return createResponseError(422, 'productId och cartId är obligatoriskt');
+    }
+    try {
+        const cartRow = { productId: +productId, cartId, amount };
+        const newCartRow = await db.cartRow.create(cartRow);
+
+        return createResponseSuccess(newCartRow);
+    } catch (error) {
+        return createResponseError(error.status, error.message);
+    }
+}
+
 async function destroy(id) {
     if (!id) {
         return createResponseError(422, 'Id är obligatoriskt');
@@ -78,12 +112,12 @@ function _formatProduct(product) {
         imageUrl: product.imageUrl,
         price: product.price,
         createdAt: product.createdAt,
-        updatedAt: product.updatedAt
+        updatedAt: product.updatedAt,
+        ratings: []
     };
 
     if (product.ratings) {
-        cleanProduct.ratings = [];
-        product.ratings.map((rating) => {
+        product.ratings.map(rating => {
             return (cleanProduct.ratings = [rating.rating, ...cleanProduct.ratings]);
         });
     }
@@ -96,5 +130,7 @@ module.exports = {
     getAll,
     create,
     update,
+    addRating,
+    addToCart,
     destroy
 };

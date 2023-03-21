@@ -8,7 +8,7 @@ module.exports = (sequelize, DataTypes) => {
                 autoIncrement: true
             },
             amount: {
-                type: DataTypes.BOOLEAN
+                type: DataTypes.DOUBLE
             }
         },
         { underscored: true }

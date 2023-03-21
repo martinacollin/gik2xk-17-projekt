@@ -1,4 +1,6 @@
-import { Button } from '@mui/material';
+import AddShoppingCartIcon from '@mui/icons-material/AddShoppingCart';
+import DeleteIcon from '@mui/icons-material/Delete';
+import { Button, Typography } from '@mui/material';
 import { Box, Container } from '@mui/system';
 import { useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
@@ -6,9 +8,9 @@ import { Link, useNavigate, useParams } from 'react-router-dom';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import EditIcon from '@mui/icons-material/Edit';
 import ProductDetailItem from '../components/ProductDetailItem';
-import { getOne } from '../models/ProductModel';
+import { calculateRating, getOne, remove } from '../models/ProductModel';
 
-function ProductDetail() {
+function ProductDetail({ onAddToCartClick }) {
     const params = useParams();
     const productId = params.id;
 
@@ -17,12 +19,33 @@ function ProductDetail() {
     const [product, setProduct] = useState({});
 
     useEffect(() => {
-        getOne(productId).then((product) => setProduct(product));
+        getOne(productId).then((product) => {
+            product.rating = calculateRating(product.ratings);
+            setProduct(product);
+        });
     }, [productId]);
 
+    function onDelete() {
+        remove(product.id).then(() =>
+            navigate('/', { state: { message: 'Produkten togs bort' } })
+        );
+    }
+
     return (
-        <Container maxWidth="md">
-            <ProductDetailItem product={product} />
+        <Container maxWidth="sm">
+            {product ?
+                <ProductDetailItem product={product} />
+                : (
+                    <Typography>Produkt saknas</Typography>
+                )}
+            <Button
+                startIcon={<AddShoppingCartIcon />}
+                sx={{ width: '100%', marginBottom: '1rem' }}
+                color="primary"
+                onClick={() => onAddToCartClick(product)}
+                variant="contained">
+                Lägg i varukorg
+            </Button>
             <Box
                 marginBottom="1rem"
                 display="flex"
@@ -38,14 +61,24 @@ function ProductDetail() {
                     Tillbaka
                 </Button>
 
-                <Link to={`/products/${productId}/edit`}>
+                <Box>
                     <Button
+                        startIcon={<DeleteIcon />}
+                        sx={{ marginRight: '1rem' }}
+                        color="warning"
+                        onClick={onDelete}
+                        variant="contained">
+                        Ta bort
+                    </Button>
+                    <Button
+                        component={Link}
+                        to={`/products/${productId}/edit`}
                         color="secondary"
                         startIcon={<EditIcon />}
                         variant="contained">
                         Ändra
                     </Button>
-                </Link>
+                </Box>
             </Box>
         </Container>
     );

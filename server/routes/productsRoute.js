@@ -39,4 +39,24 @@ router.delete('/', (req, res) => {
     });
 });
 
+router.post('/:id/addRating', (req, res) => {
+    const rating = req.body;
+    const productId = req.params.id;
+
+    productService.addRating(productId, rating).then((result) => {
+        res.status(result.status).json(result.data);
+    });
+});
+
+router.post('/:id/addToCart', (req, res) => {
+    const cartId = req.body.cartId;
+    const amount = req.body.amount;
+    const productId = req.params.id;
+
+    productService.addToCart(productId, cartId, amount).then((result) => {
+        res.status(result.status).json(result.data);
+    });
+});
+
+
 module.exports = router;

@@ -1,20 +1,41 @@
 import AddIcon from '@mui/icons-material/Add';
 import PolylineIcon from '@mui/icons-material/Polyline';
 import ShoppingCartOutlinedIcon from '@mui/icons-material/ShoppingCartOutlined';
-import { AppBar, Box, Button, Container, IconButton, Toolbar, Typography } from '@mui/material';
+import { AppBar, Badge, Box, Button, Container, IconButton, Toolbar, Typography } from '@mui/material';
+import { useEffect, useState } from 'react';
 import { Link, Route, Routes } from 'react-router-dom';
 import './App.css';
+import { addToCart } from './models/ProductModel';
+import { getCart, getUser } from './models/UserModel';
 import Cart from './views/Cart';
 import ProductDetail from './views/ProductDetail';
 import ProductEdit from './views/ProductEdit';
 import Products from './views/Products';
 
 function App() {
-
   const userId = 1;
-  const handleCart = (event) => {
-    console.log('varukorg');
-  };
+
+  const [user, setUser] = useState();
+  const [cart, setCart] = useState();
+
+  useEffect(() => {
+    getUser(userId).then((user) => {
+      setUser(user);
+    });
+    getCart(userId).then((cart) => {
+      setCart(cart);
+    });
+  }, [userId]);
+
+  function onAddToCartClick(product) {
+    addToCart(product.id, cart.id, product.price).then((cartRow) => {
+      const updatedCart = {
+        ...cart,
+        cartRows: [...cart.cartRows, cartRow]
+      };
+      setCart(updatedCart);
+    });
+  }
 
   return (
     <div className="App">
@@ -64,10 +85,22 @@ function App() {
                 component={Link}
                 to={`/users/${userId}/cart`}
                 size="large"
-                onClick={handleCart}
                 color="inherit"
               >
-                <ShoppingCartOutlinedIcon />
+                {user &&
+                  <Typography
+                    variant="body2"
+                    sx={{ marginRight: '1rem' }}
+                  >{user.firstName} {user.lastName}
+                  </Typography>
+                }
+                {cart?.cartRows?.length ?
+                  <Badge badgeContent={cart.cartRows.length} color="secondary">
+                    <ShoppingCartOutlinedIcon />
+                  </Badge>
+                  :
+                  <ShoppingCartOutlinedIcon />
+                }
               </IconButton>
             </Box>
           </Toolbar>
@@ -79,11 +112,7 @@ function App() {
           <Route
             exact
             path="/"
-            element={<Products></Products>}></Route>
-          <Route
-            exact
-            path="/products"
-            element={<Products></Products>}></Route>
+            element={<Products onAddToCartClick={onAddToCartClick}></Products>}></Route>
           <Route
             exact
             path="/products/new"
@@ -95,11 +124,11 @@ function App() {
           <Route
             exact
             path="/products/:id"
-            element={<ProductDetail></ProductDetail>}></Route>
+            element={<ProductDetail onAddToCartClick={onAddToCartClick}></ProductDetail>}></Route>
           <Route
             exact
             path="/users/:id/cart"
-            element={<Cart></Cart>}></Route>
+            element={<Cart cart={cart}></Cart>}></Route>
         </Routes>
       </Container>
     </div>

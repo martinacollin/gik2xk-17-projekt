@@ -60,7 +60,7 @@ function ProductEdit() {
     }
 
     return (
-        <Container maxWidth="md">
+        <Container maxWidth="sm">
             <Snackbar
                 open={alertOpen}
                 anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
@@ -122,7 +122,8 @@ function ProductEdit() {
                     <Button
                         startIcon={<ChevronLeftIcon />}
                         onClick={() => navigate(-1)}
-                        variant="contained">
+                        variant="contained"
+                        color="secondary">
                         Tillbaka
                     </Button>
                     <Box>

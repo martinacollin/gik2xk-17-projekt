@@ -44,6 +44,28 @@ export async function create(product) {
     }
 }
 
+export async function addRating(productId, rating) {
+    const result = await api.post(`/products/${productId}/addRating`, rating);
+
+    if (result.status === 200) return result.data;
+    else {
+        console.log(result.status);
+        console.log(result.data);
+        return {};
+    }
+}
+
+export async function addToCart(productId, cartId, amount) {
+    const result = await api.post(`/products/${productId}/addToCart`, { cartId, amount });
+
+    if (result.status === 200) return result.data;
+    else {
+        console.log(result.status);
+        console.log(result.data);
+        return {};
+    }
+}
+
 export async function remove(id) {
     const result = await api.delete('/products/', { data: { id } });
 
@@ -53,5 +75,16 @@ export async function remove(id) {
         console.log(result.data);
         return {};
     }
+}
+
+export function calculateRating(ratings) {
+    if (!ratings || !ratings.length) {
+        return null;
+    }
+    let sum = 0;
+    ratings.forEach(rating => sum += rating);
+    const average = sum / ratings.length;
+    console.log(average);
+    return average;
 }
 
