@@ -1,6 +1,6 @@
 import { Box, Typography } from "@mui/material";
 
-function CartRow({ label, amount }) {
+function CartRow({ label, price }) {
     return (
         <li>
             <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginY: '1rem' }}>
@@ -8,7 +8,7 @@ function CartRow({ label, amount }) {
                     {label}
                 </Typography>
                 <Typography variant="body1" color="text.secondary">
-                    {amount}:-
+                    {price}:-
                 </Typography>
             </Box>
         </li>

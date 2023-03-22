@@ -81,9 +81,14 @@ async function addToCart(productId, cartId, amount) {
         return createResponseError(422, 'productId och cartId är obligatoriskt');
     }
     try {
-        const cartRow = { productId: +productId, cartId, amount };
-        const newCartRow = await db.cartRow.create(cartRow);
-
+        const existing = await db.cartRow.findOne({
+            where: { cartId, productId }
+        });
+        if (existing) {
+            amount += existing.amount;
+        }
+        const cartRow = { id: existing?.id, productId: +productId, cartId, amount };
+        const [newCartRow, created] = await db.cartRow.upsert(cartRow);
         return createResponseSuccess(newCartRow);
     } catch (error) {
         return createResponseError(error.status, error.message);

@@ -29,7 +29,7 @@ function ProductListItem({ product, onAddToCartClick }) {
             </CardActionArea>
             <CardActions disableSpacing>
                 <IconButton color="secondary" size="large"
-                    onClick={() => onAddToCartClick(product)}>
+                    onClick={() => onAddToCartClick(product, 1)}>
                     <AddShoppingCartIcon />
                 </IconButton>
                 <IconButton

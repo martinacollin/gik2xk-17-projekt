@@ -17,24 +17,43 @@ function App() {
 
   const [user, setUser] = useState();
   const [cart, setCart] = useState();
+  const [cartTotalAmount, setCartTotalAmount] = useState();
 
   useEffect(() => {
     getUser(userId).then((user) => {
       setUser(user);
     });
     getCart(userId).then((cart) => {
+      setCartTotalAmount(calculateTotalAmount(cart.products));
       setCart(cart);
     });
-  }, [userId]);
+  }, [userId, cartTotalAmount]);
 
-  function onAddToCartClick(product) {
-    addToCart(product.id, cart.id, product.price).then((cartRow) => {
-      const updatedCart = {
-        ...cart,
-        cartRows: [...cart.cartRows, cartRow]
-      };
+  function onAddToCartClick(product, amount) {
+    addToCart(product.id, cart.id, amount).then((cartRow) => {
+      const updatedCart = { ...cart };
+      const existingProduct = updatedCart.products.find(p => p.id === product.id);
+      if (existingProduct) {
+        existingProduct.amount = cartRow.amount;
+      } else {
+        updatedCart.products.push({
+          id: product.id,
+          title: product.title,
+          price: product.price,
+          amount: cartRow.amount
+        });
+      }
       setCart(updatedCart);
+      setCartTotalAmount(calculateTotalAmount(updatedCart.products));
     });
+  }
+
+  function calculateTotalAmount(cartProducts) {
+    let totalAmount = 0;
+    cartProducts.forEach(p => {
+      totalAmount += p.amount;
+    });
+    return totalAmount;
   }
 
   return (
@@ -94,8 +113,8 @@ function App() {
                   >{user.firstName} {user.lastName}
                   </Typography>
                 }
-                {cart?.cartRows?.length ?
-                  <Badge badgeContent={cart.cartRows.length} color="secondary">
+                {cartTotalAmount ?
+                  <Badge badgeContent={cartTotalAmount} color="secondary">
                     <ShoppingCartOutlinedIcon />
                   </Badge>
                   :

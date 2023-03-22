@@ -7,10 +7,15 @@ const {
 
 async function getById(id) {
     try {
-        const user = await db.user.findOne({
-            where: { id }
+        const [user, created] = await db.user.findOrCreate({
+            where: { id },
+            defaults: {
+                email: 'johndoe@defaultuser.com',
+                firstName: 'John',
+                lastName: 'Doe',
+                password: 'password'
+            }
         });
-        /* Om allt blev bra, returnera user */
         return createResponseSuccess(_formatUser(user));
     } catch (error) {
         return createResponseError(error.status, error.message);
@@ -19,14 +24,11 @@ async function getById(id) {
 
 async function getCart(userId) {
     try {
-        const activeCart = await db.cart.findOne({
-            where: { userId, payed: false }
+        const [activeCart, created] = await db.cart.findOrCreate({
+            where: { userId, payed: false },
+            include: [db.product]
         });
-        const cartRows = await db.cartRow.findAll({
-            where: { cartId: activeCart.id }
-        });
-        activeCart.cartRows = cartRows;
-        return createResponseSuccess(_formatActiveCart([activeCart]));
+        return createResponseSuccess(_formatActiveCart(activeCart));
     } catch (error) {
         return createResponseError(error.status, error.message);
     }
@@ -71,24 +73,25 @@ function _formatUser(user) {
     return cleanUser;
 }
 
-function _formatActiveCart(carts) {
-    if (!carts || !carts.length) {
+function _formatActiveCart(cart) {
+    if (!cart) {
         return null;
     }
-    const activeCart = carts[carts.length - 1]; // ta den senaste ifall det skulle finnas fler
     const cleanCart = {
-        id: activeCart.id,
-        payed: activeCart.payed,
-        cartRows: []
+        id: cart.id,
+        payed: cart.payed,
+        products: []
     };
-    if (activeCart.cartRows) {
-        activeCart.cartRows.map(cartRow => {
-            const cleanCartRow = {
-                id: cartRow.id,
-                productId: cartRow.productId,
-                amount: cartRow.amount
+    if (cart.products) {
+        cart.products.map(product => {
+            console.log(product.cartRow);
+            const cleanProduct = {
+                id: product.id,
+                title: product.title,
+                price: product.price,
+                amount: product.cartRow.amount
             };
-            return (cleanCart.cartRows = [cleanCartRow, ...cleanCart.cartRows]);
+            return (cleanCart.products = [cleanProduct, ...cleanCart.products]);
         });
     }
     return cleanCart;

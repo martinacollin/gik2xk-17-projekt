@@ -1,37 +1,18 @@
 import { Card, CardContent, CardHeader, Container, Divider, Typography } from "@mui/material";
 import { useEffect, useState } from "react";
 import CartRow from "../components/CartRow";
-import { getAll } from "../models/ProductModel";
 
 function Cart({ cart }) {
-    const [cartRows, setCartRows] = useState([]);
     const [totalSum, setTotalSum] = useState(0);
     useEffect(() => {
-        if (!cart?.cartRows?.length) {
+        if (!cart?.products?.length) {
             return;
         }
-        getAll().then(products => {
-            let sum = 0;
-            const groupedRows = [];
-            cart.cartRows.forEach(cr => {
-                const existing = groupedRows.find(row => row.productId === cr.productId);
-                if (existing) {
-                    existing.count++;
-                    existing.amount += cr.amount;
-                } else {
-                    const product = products.find(p => p.id === cr.productId);
-                    const row = {
-                        ...cr,
-                        productTitle: product?.title,
-                        count: 1
-                    };
-                    groupedRows.push(row);
-                }
-                sum += cr.amount;
-            });
-            setCartRows(groupedRows);
-            setTotalSum(sum);
+        let sum = 0;
+        cart.products.forEach(p => {
+            sum += p.amount * p.price;
         });
+        setTotalSum(sum);
     }, [cart]);
     return (
         <Container maxWidth="sm">
@@ -44,13 +25,13 @@ function Cart({ cart }) {
                     }
                 ></CardHeader>
                 <CardContent>
-                    {cartRows?.length ? (
+                    {cart?.products?.length ? (
                         <ul>
-                            {cartRows.map(cr => (
+                            {cart.products.map(p => (
                                 <CartRow
-                                    key={cr.id}
-                                    label={`${cr.count} x ${cr.productTitle}`}
-                                    amount={cr.amount}
+                                    key={p.id}
+                                    label={`${p.amount} x ${p.title}`}
+                                    price={p.amount * p.price}
                                 ></CartRow>
                             ))}
                             <li>
@@ -58,7 +39,7 @@ function Cart({ cart }) {
                             </li>
                             <CartRow
                                 label="Summa"
-                                amount={totalSum}
+                                price={totalSum}
                             ></CartRow>
                         </ul>
                     )
