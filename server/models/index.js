@@ -46,8 +46,8 @@ db.product.hasMany(db.rating, {
   onDelete: 'CASCADE'
 });
 
-db.product.belongsToMany(db.cart, { through: { model: db.cartRow, as: "Owned", unique: false } });
-db.cart.belongsToMany(db.product, { through: { model: db.cartRow, as: "Owned", unique: false } });
+db.product.belongsToMany(db.cart, { through: db.cartRow });
+db.cart.belongsToMany(db.product, { through: db.cartRow });
 
 db.sequelize = sequelize;
 db.Sequelize = Sequelize;
